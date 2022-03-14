@@ -1,15 +1,23 @@
-const container = document.getElementById('root');
-const ajax = new XMLHttpRequest();
-const content = document.createElement('div');
+const container: HTMLElement | null = document.getElementById("root");
+const ajax: XMLHttpRequest = new XMLHttpRequest();
+const content = document.createElement("div");
 const NEWS_URL = `https://api.hnpwa.com/v0/news/1.json`;
 const CONTENT_URL = `https://api.hnpwa.com/v0/item/@id.json`;
+
+type Store = {
+  currentPage = number;
+  feeds: []
+}
+
+
+
 const store = {
   currentPage: 1,
   feeds: [],
 };
 
 function getData(url) {
-  ajax.open('GET', url, false);
+  ajax.open("GET", url, false);
   ajax.send();
 
   return JSON.parse(ajax.response);
@@ -57,13 +65,17 @@ function newsFeed() {
 
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
     newsList.push(`
-    <div class="p-6 ${newsFeed[i].read ? 'bg-red-500' : 'bg-white'} mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
+    <div class="p-6 ${
+      newsFeed[i].read ? "bg-red-500" : "bg-white"
+    } mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
     <div class="flex">
       <div class="flex-auto">
         <a href="#/show/${newsFeed[i].id}">${newsFeed[i].title}</a>  
       </div>
       <div class="text-center text-sm">
-        <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${newsFeed[i].comments_count}</div>
+        <div class="w-10 text-white bg-green-300 rounded-lg px-0 py-2">${
+          newsFeed[i].comments_count
+        }</div>
       </div>
     </div>
     <div class="flex mt-3">
@@ -77,9 +89,17 @@ function newsFeed() {
   `);
   }
 
-  template = template.replace('{{__news_feed__}}', newsList.join(''));
-  template = template.replace('{{__prev_page__}}', store.currentPage > 1 ? store.currentPage - 1 : 1);
-  template = template.replace('{{__next_page__}}', store.currentPage < newsFeed.length / 10 ? store.currentPage + 1 : store.currentPage);
+  template = template.replace("{{__news_feed__}}", newsList.join(""));
+  template = template.replace(
+    "{{__prev_page__}}",
+    store.currentPage > 1 ? store.currentPage - 1 : 1
+  );
+  template = template.replace(
+    "{{__next_page__}}",
+    store.currentPage < newsFeed.length / 10
+      ? store.currentPage + 1
+      : store.currentPage
+  );
 
   container.innerHTML = template;
 }
@@ -87,7 +107,7 @@ function newsFeed() {
 function newsDetail() {
   const id = location.hash.substr(7);
 
-  const newsContent = getData(CONTENT_URL.replace("@id", id))
+  const newsContent = getData(CONTENT_URL.replace("@id", id));
 
   let template = `
     <div class="bg-gray-600 min-h-screen pb-8">
@@ -143,29 +163,28 @@ function newsDetail() {
         commentString.push(makeComment(comments[i].comments, called + 1));
       }
     }
-    return commentString.join('');
+    return commentString.join("");
   }
 
-  container.innerHTML = template.replace('{{__comments__}}', makeComment(newsContent.comments));
+  container.innerHTML = template.replace(
+    "{{__comments__}}",
+    makeComment(newsContent.comments)
+  );
 }
 
 function router() {
   const routePath = location.hash;
 
-  if (routePath === '') {
+  if (routePath === "") {
     newsFeed();
-  } else if (routePath.indexOf('#/page/') >= 0) {
+  } else if (routePath.indexOf("#/page/") >= 0) {
     store.currentPage = Number(routePath.substr(7));
     newsFeed();
-  }
-  else {
+  } else {
     newsDetail();
   }
 }
 
-window.addEventListener('hashchange', router);
+window.addEventListener("hashchange", router);
 
 router();
-
-
-
